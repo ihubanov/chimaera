@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="#FF000000">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="6dp">
+
+        <Button
+            android:id="@+id/startButton"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:layout_weight="1"
+            android:text="[ START VPN ]"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textColor="#FF00FF41"
+            android:fontFamily="monospace"
+            android:background="#FF0D1F0D"
+            android:layout_marginEnd="4dp" />
+
+        <Button
+            android:id="@+id/stopButton"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:layout_weight="1"
+            android:text="[ STOP VPN ]"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textColor="#FFFF3333"
+            android:fontFamily="monospace"
+            android:background="#FF1F0D0D"
+            android:enabled="false"
+            android:layout_marginStart="4dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="6dp">
+
+        <Button
+            android:id="@+id/checkIpButton"
+            android:layout_width="0dp"
+            android:layout_height="46dp"
+            android:layout_weight="1"
+            android:text="[ CHECK IP ]"
+            android:textSize="13sp"
+            android:textColor="#FF00CCFF"
+            android:fontFamily="monospace"
+            android:background="#FF0D1520"
+            android:enabled="false"
+            android:layout_marginEnd="4dp" />
+
+        <Button
+            android:id="@+id/newIdentityButton"
+            android:layout_width="0dp"
+            android:layout_height="46dp"
+            android:layout_weight="1"
+            android:text="[ NEW IDENTITY ]"
+            android:textSize="13sp"
+            android:textColor="#FFFFAA00"
+            android:fontFamily="monospace"
+            android:background="#FF1A1500"
+            android:enabled="false"
+            android:layout_marginStart="4dp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/torIpText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="#FF00FF41"
+        android:fontFamily="monospace"
+        android:background="#FF0A0A0A"
+        android:padding="8dp"
+        android:layout_marginBottom="6dp"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="6dp">
+
+        <CheckBox
+            android:id="@+id/alwaysOnCheck"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Always-on"
+            android:textColor="#FF00FF41"
+            android:fontFamily="monospace"
+            android:textSize="13sp"
+            android:buttonTint="#FF00FF41"
+            android:minHeight="40dp" />
+
+        <CheckBox
+            android:id="@+id/lockdownCheck"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Kill switch"
+            android:textColor="#FFFF3333"
+            android:fontFamily="monospace"
+            android:textSize="13sp"
+            android:buttonTint="#FFFF3333"
+            android:minHeight="40dp"
+            android:layout_marginStart="16dp" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="&gt; routed_apps (incl. dual):"
+        android:textSize="12sp"
+        android:textColor="#FF00FF41"
+        android:fontFamily="monospace"
+        android:layout_marginBottom="2dp" />
+
+    <Button
+        android:id="@+id/addAppButton"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:text="[ + ADD APP ]"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="#FF00CCFF"
+        android:fontFamily="monospace"
+        android:background="#FF0D1520"
+        android:layout_marginBottom="4dp" />
+
+    <ListView
+        android:id="@+id/appList"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#FF050505"
+        android:divider="#FF1A1A1A"
+        android:dividerHeight="1dp"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="&gt; traffic_log:"
+        android:textSize="12sp"
+        android:textColor="#FF00FF41"
+        android:fontFamily="monospace"
+        android:layout_marginBottom="2dp" />
+
+    <ScrollView
+        android:id="@+id/logScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#FF050505"
+        android:padding="6dp"
+        android:layout_marginBottom="4dp">
+
+        <TextView
+            android:id="@+id/logText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="10sp"
+            android:textColor="#FF00FF41"
+            android:fontFamily="monospace"
+            android:text="> awaiting_connection..." />
+    </ScrollView>
+
+    <TextView
+        android:id="@+id/statusText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="&gt; status: stopped"
+        android:textSize="13sp"
+        android:textColor="#FF666666"
+        android:fontFamily="monospace"
+        android:background="#FF0A0A0A"
+        android:padding="8dp" />
+
+</LinearLayout>

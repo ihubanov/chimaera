@@ -1,0 +1,14 @@
+*.iml
+.gradle
+/local.properties
+/.idea
+/build
+/app/build
+*.apk
+*.aab
+*.keystore
+*.jks
+.venv/
+store_assets/
+__pycache__/
+*.py
