@@ -2,6 +2,13 @@ plugins {
     id 'com.android.application'
 }
 
+// Load .env file for signing credentials
+def envFile = file("${rootDir}/.env")
+def envProps = new Properties()
+if (envFile.exists()) {
+    envFile.withInputStream { envProps.load(it) }
+}
+
 android {
     namespace 'com.torproxy'
     compileSdk 34
@@ -17,9 +24,9 @@ android {
     signingConfigs {
         release {
             storeFile file("${rootDir}/chimaera-release.keystore")
-            storePassword System.getenv("KEYSTORE_PASSWORD") ?: ""
+            storePassword envProps.getProperty("KEYSTORE_PASSWORD", System.getenv("KEYSTORE_PASSWORD") ?: "")
             keyAlias "chimaera"
-            keyPassword System.getenv("KEYSTORE_PASSWORD") ?: ""
+            keyPassword envProps.getProperty("KEYSTORE_PASSWORD", System.getenv("KEYSTORE_PASSWORD") ?: "")
         }
     }
 
