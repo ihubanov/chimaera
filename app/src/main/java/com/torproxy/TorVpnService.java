@@ -9,6 +9,11 @@ import android.os.Build;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
+import android.system.Os;
+import android.system.OsConstants;
+import android.system.StructPollfd;
+
+import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -142,10 +147,13 @@ public class TorVpnService extends VpnService {
         if (ACTION_DISCONNECT.equals(intent.getAction())) {
             // Block mode — keep VPN tunnel up but stop forwarding
             // Selected apps' traffic enters the tunnel but gets dropped
-            blocked = true;
-            sBlocked = true;
             running = false;
             sRunning = false;
+            // Stop old threads
+            if (vpnLoopThread != null) vpnLoopThread.interrupt();
+            if (idleWatchThread != null) idleWatchThread.interrupt();
+            blocked = true;
+            sBlocked = true;
             // Close all active SOCKS sessions
             for (TcpSession session : sessions.values()) {
                 closeSession(session);
@@ -187,15 +195,25 @@ public class TorVpnService extends VpnService {
             sRunning = false;
             blocked = false;
             sBlocked = false;
+            // Stop old threads first
+            if (vpnLoopThread != null) vpnLoopThread.interrupt();
+            if (idleWatchThread != null) idleWatchThread.interrupt();
+            if (drainThread != null) drainThread.interrupt();
             for (TcpSession session : sessions.values()) {
                 closeSession(session);
             }
             sessions.clear();
             if (executor != null) executor.shutdownNow();
+            if (vpnOutput != null) {
+                try { vpnOutput.close(); } catch (Exception ignored) {}
+                vpnOutput = null;
+            }
             if (vpnInterface != null) {
                 try { vpnInterface.close(); } catch (Exception ignored) {}
                 vpnInterface = null;
             }
+            // Give old threads time to notice running=false and exit
+            try { Thread.sleep(200); } catch (InterruptedException ignored) {}
             log("Rebuilding VPN with updated app list");
         }
 
@@ -333,7 +351,8 @@ public class TorVpnService extends VpnService {
     }
 
     private void vpnLoop() {
-        FileInputStream vpnInput = new FileInputStream(vpnInterface.getFileDescriptor());
+        FileDescriptor fd = vpnInterface.getFileDescriptor();
+        FileInputStream vpnInput = new FileInputStream(fd);
         byte[] buffer = new byte[32768];
 
         lastPacketTime = System.currentTimeMillis();
@@ -341,8 +360,20 @@ public class TorVpnService extends VpnService {
 
         while (running) {
             try {
+                // Use poll() to wait for data — prevents busy-spin on non-blocking fds
+                StructPollfd pollFd = new StructPollfd();
+                pollFd.fd = fd;
+                pollFd.events = (short) OsConstants.POLLIN;
+                int ret = Os.poll(new StructPollfd[]{pollFd}, 500); // 500ms timeout
+                if (ret == 0) continue; // timeout, no data
+                if (!running) break;
+
                 int length = vpnInput.read(buffer);
-                if (length <= 0) continue;
+                if (length < 0) {
+                    log("VPN fd closed (EOF), exiting loop");
+                    break;
+                }
+                if (length == 0) continue;
 
                 // Wake Tor from dormant if needed
                 long now = System.currentTimeMillis();
@@ -710,12 +741,21 @@ public class TorVpnService extends VpnService {
 
     private void drainLoop() {
         // Read and discard packets while blocked — prevents buffer filling up
-        // VPN fd read() blocks until data arrives, so no busy-waiting
-        FileInputStream vpnInput = new FileInputStream(vpnInterface.getFileDescriptor());
+        FileDescriptor fd = vpnInterface.getFileDescriptor();
+        FileInputStream vpnInput = new FileInputStream(fd);
         byte[] buffer = new byte[32768];
         while (blocked && !running) {
             try {
-                vpnInput.read(buffer);
+                // Use poll() to wait for data — prevents busy-spin
+                StructPollfd pollFd = new StructPollfd();
+                pollFd.fd = fd;
+                pollFd.events = (short) OsConstants.POLLIN;
+                int ret = Os.poll(new StructPollfd[]{pollFd}, 500);
+                if (ret == 0) continue; // timeout, no data
+                if (!blocked || running) break;
+
+                int length = vpnInput.read(buffer);
+                if (length < 0) break;
                 // Packets are silently dropped
             } catch (Exception e) {
                 if (blocked) {
